@@ -1,6 +1,7 @@
 package com.arduino.mando_brazo;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatImageView;
 
 import android.os.Bundle;
 import android.view.MotionEvent;
@@ -9,14 +10,19 @@ import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class ControllerActivity extends AppCompatActivity {
 
     private DatabaseReference databaseReference;
+    private int VA = 0;
     private SeekBar sliderPinza, sliderMuneca, sliderAntebrazo, sliderCodo, sliderHombro, sliderBase;
     private TextView textPinza, textMuneca, textAntebrazo, textCodo, textHombro, textBase;
+    private AppCompatImageView btn_remote;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +37,8 @@ public class ControllerActivity extends AppCompatActivity {
         Button btnCodo = findViewById(R.id.btnCodo);
         Button btnHombro = findViewById(R.id.btnHombro);
         Button btnBase = findViewById(R.id.btnBase);
+        Button btnManual = findViewById(R.id.btn_manual_auto);
+        btn_remote = findViewById(R.id.imageRemote);
 
         // Encuentra las referencias de los SeekBar y TextViews
         sliderPinza = findViewById(R.id.sliderPinza);
@@ -48,59 +56,92 @@ public class ControllerActivity extends AppCompatActivity {
         textBase = findViewById(R.id.textBase);
 
         // Inicializa los SeekBars con 1500
-        inicializarSeekBar(sliderPinza, textPinza, 1500, "Pinza");
-        inicializarSeekBar(sliderMuneca, textMuneca, 1500, "Muneca");
-        inicializarSeekBar(sliderAntebrazo, textAntebrazo, 1500, "Antebrazo");
-        inicializarSeekBar(sliderCodo, textCodo, 1500, "Codo");
-        inicializarSeekBar(sliderHombro, textHombro, 1500, "Hombro");
-        inicializarSeekBar(sliderBase, textBase, 1500, "Base");
+        inicializarSeekBar(sliderPinza, textPinza, 90, "Pinza");
+        inicializarSeekBar(sliderMuneca, textMuneca, 90, "Muneca");
+        inicializarSeekBar(sliderAntebrazo, textAntebrazo, 90, "Antebrazo");
+        inicializarSeekBar(sliderCodo, textCodo, 90, "Codo");
+        inicializarSeekBar(sliderHombro, textHombro, 90, "Hombro");
+        inicializarSeekBar(sliderBase, textBase, 90, "Base");
+
+
+
+        databaseReference.child("VA").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    VA = dataSnapshot.getValue(Integer.class); // Obtiene el valor de VA desde Firebase
+                    if (VA == 7) {
+                        btnManual.setText("Cambiar a Manual");
+                    } else {
+                        btnManual.setText("Cambiar a Auto");
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Manejar errores si es necesario
+            }
+        });
 
         // Asignar OnClickListener a cada botón
+        btnManual.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (btnManual.getText().toString().trim()=="Auto"){
+                    databaseReference.child("VA").setValue(0);
+                    btnManual.setText("Cambiar a Manual");
+                }else {
+                    databaseReference.child("VA").setValue(7);
+                    btnManual.setText("Cambiar a Auto");
+                }
+            }
+        });
         btnPinza.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sliderPinza.setProgress(1500);
-                databaseReference.child("Pinza").setValue(1500);
+                sliderPinza.setProgress(90);
+                databaseReference.child("Pinza").setValue(90);
             }
         });
 
         btnMuneca.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sliderMuneca.setProgress(1500);
-                databaseReference.child("Muneca").setValue(1500);
+                sliderMuneca.setProgress(90);
+                databaseReference.child("Muneca").setValue(90);
             }
         });
 
         btnAntebrazo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sliderAntebrazo.setProgress(1500);
-                databaseReference.child("Antebrazo").setValue(1500);
+                sliderAntebrazo.setProgress(90);
+                databaseReference.child("Antebrazo").setValue(90);
             }
         });
 
         btnCodo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sliderCodo.setProgress(1500);
-                databaseReference.child("Codo").setValue(1500);
+                sliderCodo.setProgress(90);
+                databaseReference.child("Codo").setValue(90);
             }
         });
 
         btnHombro.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sliderHombro.setProgress(1500);
-                databaseReference.child("Hombro").setValue(1500);
+                sliderHombro.setProgress(90);
+                databaseReference.child("Hombro").setValue(90);
             }
         });
 
         btnBase.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sliderBase.setProgress(1500);
-                databaseReference.child("Base").setValue(1500);
+                sliderBase.setProgress(90);
+                databaseReference.child("Base").setValue(90);
             }
         });
     }
@@ -129,8 +170,8 @@ public class ControllerActivity extends AppCompatActivity {
                 if (
                         seekBar == sliderBase || seekBar == sliderCodo) {
                     // Cuando se deja de tocar el SeekBar, establece el progreso a 1500 y actualiza en Firebase
-                    seekBar.setProgress(1500);
-                    databaseReference.child(servoKey).setValue(1500);
+                    seekBar.setProgress(90);
+                    databaseReference.child(servoKey).setValue(90);
                 }
             }
         });
